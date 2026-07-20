@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090d12">
+  <title>David's Gym Companion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">DAVID'S GYM COMPANION</p>
+        <h1 id="dayTitle">Monday Workout</h1>
+      </div>
+      <button id="dayButton" class="small-button" type="button">Change day</button>
+    </header>
+
+    <section class="progress-wrap" aria-label="Workout progress">
+      <div class="progress-meta">
+        <span id="exerciseCount">Exercise 1 of 6</span>
+        <span id="progressPercent">0%</span>
+      </div>
+      <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+    </section>
+
+    <article class="exercise-card">
+      <div class="title-row">
+        <span id="exerciseNumber" class="number-badge">1</span>
+        <h2 id="exerciseName">Sprinter Start</h2>
+      </div>
+
+      <div class="image-grid">
+        <figure>
+          <figcaption>START</figcaption>
+          <img id="startImage" alt="">
+        </figure>
+        <figure>
+          <figcaption>FINISH</figcaption>
+          <img id="finishImage" alt="">
+        </figure>
+      </div>
+
+      <figure class="muscle-figure">
+        <figcaption>MUSCLES WORKED</figcaption>
+        <img id="muscleImage" alt="">
+      </figure>
+
+      <section class="instructions">
+        <p><strong>Focus:</strong> <span id="cue"></span></p>
+        <p><strong>Muscles:</strong> <span id="muscles"></span></p>
+        <details>
+          <summary>Common mistakes</summary>
+          <p id="mistakes"></p>
+        </details>
+        <details>
+          <summary>Variations</summary>
+          <p id="variations"></p>
+        </details>
+      </section>
+
+      <section class="tracking">
+        <label>
+          Weight
+          <input id="weight" inputmode="decimal" placeholder="Enter weight">
+        </label>
+        <div class="set-grid">
+          <label>Set 1<input class="rep-input" id="rep1" inputmode="numeric" placeholder="6–8"></label>
+          <label>Set 2<input class="rep-input" id="rep2" inputmode="numeric" placeholder="6–8"></label>
+          <label>Set 3<input class="rep-input" id="rep3" inputmode="numeric" placeholder="6–8"></label>
+        </div>
+        <label>
+          Notes
+          <textarea id="notes" rows="3" placeholder="Form, pain, machine setting, or next-time adjustment"></textarea>
+        </label>
+        <button id="completeButton" class="complete-button" type="button">Mark exercise complete</button>
+      </section>
+    </article>
+
+    <nav class="nav-buttons" aria-label="Exercise navigation">
+      <button id="previousButton" type="button">← Previous</button>
+      <button id="nextButton" type="button">Next →</button>
+    </nav>
+
+    <section class="history-panel">
+      <button id="resetButton" class="danger-link" type="button">Reset today's workout</button>
+    </section>
+  </main>
+
+  <dialog id="dayDialog">
+    <form method="dialog">
+      <h2>Choose workout day</h2>
+      <button value="Monday">Monday</button>
+      <button value="Wednesday">Wednesday</button>
+      <button value="Friday">Friday</button>
+      <button value="cancel" class="cancel">Cancel</button>
+    </form>
+  </dialog>
+
+  <script src="exercises.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
