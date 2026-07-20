@@ -86,22 +86,6 @@
     saveCurrent();
   });
 
-  $("previousButton").addEventListener("click", () => {
-    saveCurrent();
-    if (state.index > 0) state.index--;
-    loadCurrent();
-  });
-
-  $("nextButton").addEventListener("click", () => {
-    saveCurrent();
-    if (state.index < workoutIds().length - 1) {
-      state.index++;
-      loadCurrent();
-    } else {
-      alert("Workout saved. Nice work, David.");
-    }
-  });
-
   $("dayButton").addEventListener("click", () => $("dayDialog").showModal());
 
   $("dayDialog").addEventListener("close", () => {
