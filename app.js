@@ -1,6 +1,10 @@
 (() => {
-  const exerciseMap = Object.fromEntries(window.EXERCISES.map(x => [x.id, x]));
+  const exerciseMap = Object.fromEntries(
+    window.EXERCISES.map(exercise => [exercise.id, exercise])
+  );
+
   const $ = id => document.getElementById(id);
+
   const state = {
     day: localStorage.getItem("gym-day") || "Monday",
     index: 0
@@ -22,89 +26,258 @@
 
   function getRecord(id) {
     const raw = localStorage.getItem(storageKey(id));
-    return raw ? JSON.parse(raw) : {};
+
+    try {
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
   }
 
   function saveCurrent() {
-    const ex = currentExercise();
-    const old = getRecord(ex.id);
-    const record = {...old};
-    fields.forEach(f => record[f] = $(f).value);
-    record.completed = $("completeButton").classList.contains("done");
+    const exercise = currentExercise();
+
+    if (!exercise) return;
+
+    const oldRecord = getRecord(exercise.id);
+    const record = { ...oldRecord };
+
+    fields.forEach(field => {
+      record[field] = $(field).value;
+    });
+
+    record.completed =
+      $("completeButton").classList.contains("done");
+
     record.savedAt = new Date().toISOString();
-    localStorage.setItem(storageKey(ex.id), JSON.stringify(record));
+
+    localStorage.setItem(
+      storageKey(exercise.id),
+      JSON.stringify(record)
+    );
+
     updateProgress();
   }
 
   function loadCurrent() {
-    const ex = currentExercise();
-    const record = getRecord(ex.id);
-    const n = workoutIds().length;
+    const exercise = currentExercise();
+
+    if (!exercise) return;
+
+    const record = getRecord(exercise.id);
+    const totalExercises = workoutIds().length;
 
     $("dayTitle").textContent = `${state.day} Workout`;
-    $("exerciseCount").textContent = `Exercise ${state.index + 1} of ${n}`;
+
+    $("exerciseCount").textContent =
+      `Exercise ${state.index + 1} of ${totalExercises}`;
+
     $("exerciseNumber").textContent = state.index + 1;
-    $("exerciseName").textContent = ex.name;
-    $("cue").textContent = ex.cue;
-    $("muscles").textContent = ex.muscles;
-    $("mistakes").textContent = ex.mistakes;
-    $("variations").textContent = ex.variations;
+    $("exerciseName").textContent = exercise.name;
+    $("cue").textContent = exercise.cue;
+    $("muscles").textContent = exercise.muscles;
+    $("mistakes").textContent = exercise.mistakes;
+    $("variations").textContent = exercise.variations;
 
-    $("startImage").src = `images/${ex.id}-start.webp`;
-    $("finishImage").src = `images/${ex.id}-finish.webp`;
-    $("muscleImage").src = `images/${ex.id}-muscles.webp`;
-    $("startImage").alt = `${ex.name} start position`;
-    $("finishImage").alt = `${ex.name} finish position`;
-    $("muscleImage").alt = `${ex.name} muscles worked`;
+    $("startImage").src =
+      `images/${exercise.id}-start.webp`;
 
-    fields.forEach(f => {
-      $(f).value = record[f] ?? (f === "weight" ? ex.defaultWeight : "");
+    $("finishImage").src =
+      `images/${exercise.id}-finish.webp`;
+
+    $("muscleImage").src =
+      `images/${exercise.id}-muscles.webp`;
+
+    $("startImage").alt =
+      `${exercise.name} start position`;
+
+    $("finishImage").alt =
+      `${exercise.name} finish position`;
+
+    $("muscleImage").alt =
+      `${exercise.name} muscles worked`;
+
+    fields.forEach(field => {
+      $(field).value =
+        record[field] ??
+        (field === "weight" ? exercise.defaultWeight : "");
     });
 
-    $("completeButton").classList.toggle("done", Boolean(record.completed));
-    $("completeButton").textContent = record.completed ? "Completed ✓" : "Mark exercise complete";
-    $("previousButton").disabled = state.index === 0;
-    $("nextButton").textContent = state.index === n - 1 ? "Finish" : "Next →";
+    const completed = Boolean(record.completed);
+
+    $("completeButton").classList.toggle(
+      "done",
+      completed
+    );
+
+    $("completeButton").textContent =
+      completed
+        ? "Completed ✓"
+        : "Mark exercise complete";
+
     updateProgress();
-    window.scrollTo({top: 0, behavior: "smooth"});
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
   }
 
   function updateProgress() {
     const ids = workoutIds();
-    const completed = ids.filter(id => getRecord(id).completed).length;
-    const percent = Math.round((completed / ids.length) * 100);
+
+    const completed = ids.filter(id => {
+      return getRecord(id).completed;
+    }).length;
+
+    const percent = Math.round(
+      (completed / ids.length) * 100
+    );
+
     $("progressPercent").textContent = `${percent}%`;
     $("progressBar").style.width = `${percent}%`;
   }
 
-  fields.forEach(f => $(f).addEventListener("input", saveCurrent));
+  function goToPreviousExercise() {
+    if (state.index <= 0) return;
+
+    saveCurrent();
+    state.index--;
+    loadCurrent();
+  }
+
+  function goToNextExercise() {
+    if (state.index >= workoutIds().length - 1) return;
+
+    saveCurrent();
+    state.index++;
+    loadCurrent();
+  }
+
+  fields.forEach(field => {
+    $(field).addEventListener("input", saveCurrent);
+  });
 
   $("completeButton").addEventListener("click", () => {
-    const done = !$("completeButton").classList.contains("done");
-    $("completeButton").classList.toggle("done", done);
-    $("completeButton").textContent = done ? "Completed ✓" : "Mark exercise complete";
+    const completed =
+      !$("completeButton").classList.contains("done");
+
+    $("completeButton").classList.toggle(
+      "done",
+      completed
+    );
+
+    $("completeButton").textContent =
+      completed
+        ? "Completed ✓"
+        : "Mark exercise complete";
+
     saveCurrent();
   });
 
-  $("dayButton").addEventListener("click", () => $("dayDialog").showModal());
+  $("dayButton").addEventListener("click", () => {
+    $("dayDialog").showModal();
+  });
 
   $("dayDialog").addEventListener("close", () => {
     const value = $("dayDialog").returnValue;
+
     if (window.SCHEDULE[value]) {
       saveCurrent();
+
       state.day = value;
       state.index = 0;
+
       localStorage.setItem("gym-day", value);
+
       loadCurrent();
     }
   });
 
   $("resetButton").addEventListener("click", () => {
-    if (!confirm(`Reset all saved entries for ${state.day}?`)) return;
-    workoutIds().forEach(id => localStorage.removeItem(storageKey(id)));
+    const confirmed = confirm(
+      `Reset all saved entries for ${state.day}?`
+    );
+
+    if (!confirmed) return;
+
+    workoutIds().forEach(id => {
+      localStorage.removeItem(storageKey(id));
+    });
+
     state.index = 0;
     loadCurrent();
   });
+
+  /*
+   * Swipe controls
+   *
+   * Swipe left  = next exercise
+   * Swipe right = previous exercise
+   */
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchTarget = null;
+
+  document.addEventListener(
+    "touchstart",
+    event => {
+      const touch = event.changedTouches[0];
+
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchTarget = event.target;
+    },
+    { passive: true }
+  );
+
+  document.addEventListener(
+    "touchend",
+    event => {
+      /*
+       * Do not change exercises while touching
+       * an input, notes box, button, or dialog.
+       */
+      if (
+        touchTarget?.closest(
+          "input, textarea, select, button, dialog"
+        )
+      ) {
+        return;
+      }
+
+      const touch = event.changedTouches[0];
+
+      const horizontalMovement =
+        touch.clientX - touchStartX;
+
+      const verticalMovement =
+        touch.clientY - touchStartY;
+
+      const minimumSwipeDistance = 60;
+
+      /*
+       * Ignore short movements and ordinary
+       * upward or downward scrolling.
+       */
+      if (
+        Math.abs(horizontalMovement) <
+          minimumSwipeDistance ||
+        Math.abs(horizontalMovement) <=
+          Math.abs(verticalMovement)
+      ) {
+        return;
+      }
+
+      if (horizontalMovement < 0) {
+        goToNextExercise();
+      } else {
+        goToPreviousExercise();
+      }
+    },
+    { passive: true }
+  );
 
   loadCurrent();
 })();
